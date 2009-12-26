@@ -1,29 +1,26 @@
 import os, sys
 from random import randint, choice
 
-import time
 import pygame
 from pygame.locals import *
 from pygame.mixer import Sound
 
 accumulator = 0
 instruments = []
-BEAT_SPEED = 1000
+BEAT_SPEED = 750
 
 
 class Instrument:
   def __init__(self, sound_file, position):
-    self.position = position + 1
+    self.position = position
     try:
       self.sound = Sound(sound_file)
     except pygame.error, message:
-        # print 'Cannot load sound:', wav
         raise SystemExit, message
   
-  _counter = 0
-  
-  def play(self):
-    self.sound.play()
+  def play(self, beat):
+    if(self.position == beat):
+      self.sound.play()
 
 class Count:
   beat_index = 0
@@ -35,10 +32,8 @@ class Count:
   def beat(self):
       self.beat_index += 1
       self.beat_index %= len(self.beats)
-      if (self.beat_index % 2 == 0):
-        instruments[self.beat_index].play()
-      else:
-        instruments[self.beat_index].play()
+      for instrument in instruments:
+        instrument.play(self.beat_index)
   
   @classmethod
   def draw(cls, screen, full):
@@ -56,9 +51,9 @@ def Beat(time_change, screen):
   avg_delta = BEAT_SPEED
 
   
-  if (accumulator >= avg_delta):
+  if (accumulator >= avg_delta): # - time_change/2 and accumulator <= avg_delta + time_change/2):
     print accumulator
-    accumulator -= avg_delta
+    accumulator = 0
     Count.beat()
   
   Count.draw(screen, BEAT_SPEED)
@@ -66,29 +61,27 @@ def Beat(time_change, screen):
 def run_game():
   SCREEN_WIDTH, SCREEN_HEIGHT = 400, 400
   BG_COLOR = 0, 0, 0
-  INSTRUMENT_FILENAMES = ["sounds/777_vitriolix_808_kick.wav", "sounds/439_TicTacShutUp_prac_snare_2.wav"]
+  INSTRUMENT_FILENAMES = ["sounds/439_TicTacShutUp_prac_snare_2.wav", "sounds/777_vitriolix_808_kick.wav"]
   N_INSTRUMENTS = 4
   pygame.init()
   screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
   clock = pygame.time.Clock()
-  
+  print pygame.mixer.get_num_channels()
   global instruments
   for i in range(N_INSTRUMENTS):
-    instruments.append(Instrument(INSTRUMENT_FILENAMES[i % 2], i))
+    instruments.append(Instrument(INSTRUMENT_FILENAMES[1], i))
+    if i % 2 == 1:
+      instruments.append(Instrument(INSTRUMENT_FILENAMES[0], i))
   
   while True:
     time_passed = clock.tick(60)
-    
     for event in pygame.event.get():
         if event.type == KEYDOWN and event.key == K_ESCAPE or event.type == pygame.QUIT:
             exit_game()
       
     screen.fill(BG_COLOR)
     Beat(time_passed, screen)
-    for instrument in instruments:
-        # instrument.tick(time_passed)
-        
-        pygame.display.flip()
+    pygame.display.flip()
 
 
 def exit_game():
