@@ -52,7 +52,6 @@ def Beat(time_change, screen):
 
   
   if (accumulator >= avg_delta): # - time_change/2 and accumulator <= avg_delta + time_change/2):
-    print accumulator
     accumulator = 0
     Count.beat()
   
@@ -66,7 +65,6 @@ def run_game():
   pygame.init()
   screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
   clock = pygame.time.Clock()
-  print pygame.mixer.get_num_channels()
   global instruments
   for i in range(N_INSTRUMENTS):
     instruments.append(Instrument(INSTRUMENT_FILENAMES[1], i))
