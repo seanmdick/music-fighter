@@ -1,13 +1,14 @@
-import time
+import os, sys
 from random import randint, choice
 
+import time
 import pygame
-
+from pygame.locals import *
 from pygame.mixer import Sound
 
 accumulator = 0
 instruments = []
-BEAT_SPEED = 500
+BEAT_SPEED = 1000
 
 
 class Instrument:
@@ -34,10 +35,13 @@ class Count:
   def beat(self):
       self.beat_index += 1
       self.beat_index %= len(self.beats)
-      instruments[self.beat_index].play()
+      if (self.beat_index % 2 == 0):
+        instruments[self.beat_index].play()
+      else:
+        instruments[self.beat_index].play()
   
   @classmethod
-  def draw(cls, screen, amount, full):
+  def draw(cls, screen, full):
       screen_rect = screen.get_rect()
       font = pygame.font.Font( None, 440 )
       image = font.render( cls.beats[cls.beat_index], True, cls.color )
@@ -49,44 +53,38 @@ class Count:
 def Beat(time_change, screen):
   global accumulator
   accumulator += time_change
-    
+  avg_delta = BEAT_SPEED
+
   
-  if (accumulator > BEAT_SPEED):
-    accumulator -= BEAT_SPEED
+  if (accumulator >= avg_delta):
+    print accumulator
+    accumulator -= avg_delta
     Count.beat()
   
-  Count.draw(screen, accumulator, BEAT_SPEED)
+  Count.draw(screen, BEAT_SPEED)
 
 def run_game():
-  # Game parameters
   SCREEN_WIDTH, SCREEN_HEIGHT = 400, 400
   BG_COLOR = 0, 0, 0
-  INSTRUMENT_FILENAMES = ["777_vitriolix_808_kick.wav"]
+  INSTRUMENT_FILENAMES = ["sounds/777_vitriolix_808_kick.wav", "sounds/439_TicTacShutUp_prac_snare_2.wav"]
   N_INSTRUMENTS = 4
   pygame.init()
   screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
   clock = pygame.time.Clock()
   
-  # Create N_CREEPS random creeps.
   global instruments
   for i in range(N_INSTRUMENTS):
-    instruments.append(Instrument(choice(INSTRUMENT_FILENAMES), i))
+    instruments.append(Instrument(INSTRUMENT_FILENAMES[i % 2], i))
   
-  # The main game loop
-  #
   while True:
-    # Limit frame speed to 50 FPS
-    #
-    time_passed = clock.tick(10)
-      
+    time_passed = clock.tick(60)
+    
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == KEYDOWN and event.key == K_ESCAPE or event.type == pygame.QUIT:
             exit_game()
       
-      # Redraw the background
     screen.fill(BG_COLOR)
     Beat(time_passed, screen)
-      # Update and redraw all creeps
     for instrument in instruments:
         # instrument.tick(time_passed)
         
